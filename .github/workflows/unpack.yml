@@ -5,6 +5,8 @@ on:
   push:
     paths:
       - 'legacypro-repo.zip'
+permissions:
+  contents: write
 
 jobs:
   unzip:
