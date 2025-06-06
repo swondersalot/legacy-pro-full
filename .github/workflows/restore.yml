@@ -1,0 +1,42 @@
+name: Restore Full Codebase from Text
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse text and create files
+        run: |
+          set -e
+          current=""
+          while IFS= read -r line; do
+            if [[ "$line" =~ ^/ ]]; then
+              filepath="${line#/}"
+              mkdir -p "$(dirname "$filepath")"
+              current="$filepath"
+              : > "$current"
+            else
+              if [[ -n "$current" ]]; then
+                echo "$line" >> "$current"
+              fi
+            fi
+          done < legacy_pro_v6.7_corrected.txt
+
+      - name: Commit restored files to new branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B legacypro-full-restore
+          git add .
+          git commit -m "Restore full codebase from text file"
+          git push --force origin legacypro-full-restore
