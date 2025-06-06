@@ -1,0 +1,23 @@
+require("dotenv").config();
+
+module.exports = {
+  DATABASE_URL: process.env.DATABASE_URL,
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+  JWT_SECRET: process.env.JWT_SECRET,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN,
+  TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER,
+  PLAID_CLIENT_ID: process.env.PLAID_CLIENT_ID,
+  PLAID_SECRET: process.env.PLAID_SECRET,
+  PLAID_ENV: process.env.PLAID_ENV || "sandbox",
+  YODLEE_CLIENT_ID: process.env.YODLEE_CLIENT_ID,
+  YODLEE_SECRET: process.env.YODLEE_SECRET,
+  EMAIL_SERVER: process.env.EMAIL_SERVER,
+  EMAIL_FROM: process.env.EMAIL_FROM,
+  FCM_SERVER_KEY: process.env.FCM_SERVER_KEY,
+  RATE_LIMIT_WINDOW: process.env.RATE_LIMIT_WINDOW || 15 * 60 * 1000,
+  RATE_LIMIT_MAX: process.env.RATE_LIMIT_MAX || 100
+};

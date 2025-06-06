@@ -8,224 +8,321 @@ generator client {
 }
 
 model User {
-  id                 String   @id @default(uuid())
-  email              String   @unique
-  passwordHash       String
-  name               String?
-  locale             String   @default("en")
-  twoFactorSecret    String?
-  twoFactorEnabled   Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  subscription       Subscription?
-  vaultFiles         VaultFile[]
-  trusts             Trust[]
-  entities           Entity[]
-  settings           UserSettings?
-  checkIns           UserCheckIn[]
-  pushTokens         PushToken[]
-  notifications      Notification[]
-  financialAccounts  FinancialAccount[]
+  id                String             @id @default(uuid())
+  email             String             @unique
+  passwordHash      String?
+  name              String?
+  avatarUrl         String?
+  role              Role               @default(USER)
+  twoFAEnabled      Boolean            @default(false)
+  twoFASecret       String?
+  locale            String             @default("en")
+  firstTime         Boolean            @default(true)
+  lastLogin         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  sessions          Session[]
+  userSubscriptions UserSubscription[]
+  vaultFolders      VaultFolder[]
+  vaultFiles        VaultFile[]
+  auditLogs         AuditLog[]
+  notifications     Notification[]
+  notificationPrefs NotificationPreference[]
+  userCheckIns      UserCheckIn[]
+  aiUsageLogs       AIUsageLog[]
+  trusts            Trust[]
+  entities          Entity[]
+  legacyLetters     LegacyLetter[]
+  pushTokens        PushToken[]
+  financialAccounts FinancialAccount[]
 }
 
-model Subscription {
-  id             String   @id @default(uuid())
-  user           User     @relation(fields: [userId], references: [id])
-  userId         String   @unique
-  tier           String
-  stripeCustomer String?
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  expires      DateTime
+}
+
+model SubscriptionPlan {
+  id             String           @id @default(uuid())
+  name           String           @unique
+  stripePlanId   String           @unique
+  priceCents     Int
+  billingCycle   BillingCycle
+  storageLimitMB Int
+  createdAt      DateTime         @default(now())
+}
+
+model UserSubscription {
+  id             String              @id @default(uuid())
+  userId         String
+  planId         String
+  status         SubscriptionStatus  @default(PENDING)
+  startDate      DateTime?
+  endDate        DateTime?
   stripeSubId    String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  cancelAt       DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  user           User                @relation(fields: [userId], references: [id])
+  plan           SubscriptionPlan    @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+}
+
+model VaultFolder {
+  id         String       @id @default(uuid())
+  userId     String
+  parentId   String?
+  name       String
+  path       String
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  user       User         @relation(fields: [userId], references: [id])
+  parent     VaultFolder? @relation("FolderParent", fields: [parentId], references: [id])
+  children   VaultFolder[] @relation("FolderParent")
+  files      VaultFile[]
 }
 
 model VaultFile {
-  id             String      @id @default(uuid())
-  user           User        @relation(fields: [userId], references: [id])
-  userId         String
-  folder         String
-  filename       String
-  s3Key          String
-  mimeType       String
-  size           Int
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  auditLogs      AuditLog[]
-  emergencyCodes EmergencyCode[]
-  @@index([userId, createdAt])
+  id          String       @id @default(uuid())
+  userId      String
+  folderId    String
+  fileName    String
+  fileType    String
+  size        Int
+  s3Key       String       @unique
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  isArchived  Boolean       @default(false)
+
+  user        User          @relation(fields: [userId], references: [id])
+  folder      VaultFolder   @relation(fields: [folderId], references: [id])
+  auditLogs   AuditLog[]    @relation("FileActions")
 }
 
 model AuditLog {
-  id           String    @id @default(uuid())
-  user         User      @relation(fields: [userId], references: [id])
+  id           String        @id @default(uuid())
   userId       String
-  resourceType String
+  resourceType ResourceType
   resourceId   String
   action       String
   metadata     Json?
-  createdAt    DateTime  @default(now())
-  @@index([userId, createdAt])
-}
+  timestamp    DateTime      @default(now())
 
-model EmergencyCode {
-  id           String   @id @default(uuid())
-  vaultFile    VaultFile @relation(fields: [vaultFileId], references: [id])
-  vaultFileId  String
-  code         String   @unique
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
-}
-
-model RegulatoryUpdate {
-  id          String   @id @default(uuid())
-  state       String
-  title       String
-  description String
-  effectiveOn DateTime
-  createdAt   DateTime @default(now())
+  user         User          @relation(fields: [userId], references: [id])
 }
 
 model Notification {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
+  id        String            @id @default(uuid())
   userId    String
-  category  String
-  title     String
-  message   String
-  isRead    Boolean  @default(false)
-  data      Json?
-  createdAt DateTime @default(now())
+  type      NotificationType
+  content   Json
+  read      Boolean           @default(false)
+  createdAt DateTime          @default(now())
+
+  user      User              @relation(fields: [userId], references: [id])
 }
 
-model UserSettings {
-  id                    String   @id @default(uuid())
-  user                  User     @relation(fields: [userId], references: [id])
-  userId                String   @unique
-  locale                String   @default("en")
-  notificationEmail     Boolean  @default(true)
-  notificationSMS       Boolean  @default(false)
-  notificationPush      Boolean  @default(false)
-  nextCheckIn           DateTime?
-  checkInFrequency      String?
-  emergencyContactEmail String?
-  emergencyContactPhone String?
-  onboarded             Boolean  @default(false)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+model NotificationPreference {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  enabled   Boolean          @default(true)
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@unique([userId, type])
 }
 
 model UserCheckIn {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  frequency String
-  nextDate  DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String    @id @default(uuid())
+  userId     String
+  frequency  Frequency
+  nextDate   DateTime
+  lastSent   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id])
 }
 
-model PushToken {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  token     String   @unique
-  deviceId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model AIUsageLog {
+  id           String      @id @default(uuid())
+  userId       String
+  feature      FeatureType
+  tokensUsed   Int
+  promptHash   String
+  createdAt    DateTime    @default(now())
+
+  user         User        @relation(fields: [userId], references: [id])
 }
 
 model Trust {
-  id                     String        @id @default(uuid())
-  user                   User          @relation(fields: [userId], references: [id])
-  userId                 String
-  type                   String
-  name                   String
-  grantorFirstName       String
-  grantorLastName        String
-  trustees               Json
-  successorTrustees      Json?
-  beneficiaries          Json
-  alternateBeneficiaries Json?
-  stateOfRegistration    String
-  assetDescriptions      Json?
-  clauseSelections       Json
-  completedFields        Json
-  finalized              Boolean       @default(false)
-  finalizedAt            DateTime?
-  generatedPdfKey        String?
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-  auditLogs              AuditLog[]
+  id                String        @id @default(uuid())
+  userId            String
+  trustName         String
+  type              TrustType
+  grantor           Json
+  trustees          Json[]
+  successorTrustees Json[]
+  beneficiaries     Json[]
+  state             String
+  assetsIncluded    Json[]
+  additionalClauses String[]
+  data              Json
+  status            DraftStatus
+  pdfS3Key          String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user              User          @relation(fields: [userId], references: [id])
+  auditLogs         AuditLog[]    @relation("TrustActions")
 }
 
 model Entity {
-  id                  String    @id @default(uuid())
-  user                User      @relation(fields: [userId], references: [id])
-  userId              String
-  type                String
-  name                String
-  owners              Json
-  registeredAgent     Json
-  stateOfRegistration String
-  businessAddress     String
-  EIN                 String?
-  businessPurpose     String
-  capitalContributions Json?
-  clauseSelections    Json
-  completedFields     Json
-  finalized           Boolean   @default(false)
-  finalizedAt         DateTime?
-  generatedDocKey     String?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  auditLogs           AuditLog[]
-}
+  id                String         @id @default(uuid())
+  userId            String
+  entityName        String
+  type              EntityType
+  owners            Json[]
+  state             String
+  purpose           String?
+  capital           Json[]
+  additionalClauses String[]
+  data              Json
+  status            DraftStatus
+  pdfS3Key          String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
-model FinancialAccount {
-  id               String   @id @default(uuid())
-  user             User     @relation(fields: [userId], references: [id])
-  userId           String
-  provider         String
-  accessToken      String
-  accountId        String   @unique
-  name             String
-  mask             String?
-  type             String
-  subtype          String
-  currentBalance   Float
-  availableBalance Float
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  user              User           @relation(fields: [userId], references: [id])
+  auditLogs         AuditLog[]     @relation("EntityActions")
 }
 
 model LegacyLetter {
-  id           String   @id @default(uuid())
-  user         User     @relation(fields: [userId], references: [id])
-  userId       String
-  title        String
-  body         String
-  attachments  Json?
-  finalized    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  auditLogs    AuditLog[]
+  id         String            @id @default(uuid())
+  userId     String
+  tone       String
+  recipients String[]
+  body       String
+  attachedDocs Json[]
+  status      DraftStatus
+  pdfS3Key    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user        User             @relation(fields: [userId], references: [id])
+  auditLogs   AuditLog[]       @relation("LegacyLetterActions")
 }
 
-model ProtectionScore {
-  id             String   @id @default(uuid())
-  user           User     @relation(fields: [userId], references: [id])
-  userId         String   @unique
-  score          Int
-  maxScore       Int
-  breakdown      Json
-  lastCalculated DateTime @default(now())
+model PushToken {
+  id         String   @id @default(uuid())
+  userId     String
+  deviceId   String
+  token      String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
 }
 
-model FraudAlert {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String
-  category    String
-  description String
-  createdAt   DateTime @default(now())
+model FinancialAccount {
+  id            String      @id @default(uuid())
+  userId        String
+  provider      String
+  accountData   Json
+  accessToken   String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id])
+}
+
+model Locale {
+  id      String  @id @default(uuid())
+  code    String  @unique
+  name    String
+}
+
+model Translation {
+  id       String  @id @default(uuid())
+  localeId String
+  module   String
+  key      String
+  text     String
+
+  locale   Locale  @relation(fields: [localeId], references: [id])
+
+  @@unique([localeId, module, key])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  CANCELED
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+enum ResourceType {
+  VaultFile
+  Trust
+  Entity
+  LegacyLetter
+  User
+  Notification
+}
+
+enum NotificationType {
+  VaultAlert
+  RegulatoryUpdate
+  CheckInReminder
+  ComplianceIssue
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum FeatureType {
+  Advisor
+  TrustBuilder
+  EntityBuilder
+  LegacyLetter
+}
+
+enum TrustType {
+  REVOCABLE
+  IRREVOCABLE
+  SPECIAL_NEEDS
+  DYNASTY
+  MINOR
+}
+
+enum EntityType {
+  LLC
+  S_CORP
+  C_CORP
+  DBA
+}
+
+enum DraftStatus {
+  DRAFT
+  FINALIZED
 }
