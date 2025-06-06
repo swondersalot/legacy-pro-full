@@ -1,4 +1,4 @@
-name: Restore Full Codebase from Text
+name: Restore Full Codebase via Script
 
 on:
   workflow_dispatch:
@@ -10,27 +10,16 @@ jobs:
   restore:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Parse text and create files
+      - name: Run restore script
         run: |
-          set -e
-          current=""
-          while IFS= read -r line; do
-      if [[ "$line" =~ '^/.+\..+$' ]]; then
-              current="$filepath"
-              : > "$current"
-            else
-              if [[ -n "$current" ]]; then
-                echo "$line" >> "$current"
-              fi
-            fi
-          done < legacy_pro_v6.7_corrected.txt
+          chmod +x scripts/restore_from_text.sh
+          scripts/restore_from_text.sh legacy_pro_v6.7_corrected.txt
 
-      - name: Commit restored files to new branch
+      - name: Commit restored files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
