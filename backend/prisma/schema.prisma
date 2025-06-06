@@ -1,0 +1,231 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  email              String   @unique
+  passwordHash       String
+  name               String?
+  locale             String   @default("en")
+  twoFactorSecret    String?
+  twoFactorEnabled   Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  subscription       Subscription?
+  vaultFiles         VaultFile[]
+  trusts             Trust[]
+  entities           Entity[]
+  settings           UserSettings?
+  checkIns           UserCheckIn[]
+  pushTokens         PushToken[]
+  notifications      Notification[]
+  financialAccounts  FinancialAccount[]
+}
+
+model Subscription {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @unique
+  tier           String
+  stripeCustomer String?
+  stripeSubId    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model VaultFile {
+  id             String      @id @default(uuid())
+  user           User        @relation(fields: [userId], references: [id])
+  userId         String
+  folder         String
+  filename       String
+  s3Key          String
+  mimeType       String
+  size           Int
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  auditLogs      AuditLog[]
+  emergencyCodes EmergencyCode[]
+  @@index([userId, createdAt])
+}
+
+model AuditLog {
+  id           String    @id @default(uuid())
+  user         User      @relation(fields: [userId], references: [id])
+  userId       String
+  resourceType String
+  resourceId   String
+  action       String
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  @@index([userId, createdAt])
+}
+
+model EmergencyCode {
+  id           String   @id @default(uuid())
+  vaultFile    VaultFile @relation(fields: [vaultFileId], references: [id])
+  vaultFileId  String
+  code         String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model RegulatoryUpdate {
+  id          String   @id @default(uuid())
+  state       String
+  title       String
+  description String
+  effectiveOn DateTime
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  category  String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  data      Json?
+  createdAt DateTime @default(now())
+}
+
+model UserSettings {
+  id                    String   @id @default(uuid())
+  user                  User     @relation(fields: [userId], references: [id])
+  userId                String   @unique
+  locale                String   @default("en")
+  notificationEmail     Boolean  @default(true)
+  notificationSMS       Boolean  @default(false)
+  notificationPush      Boolean  @default(false)
+  nextCheckIn           DateTime?
+  checkInFrequency      String?
+  emergencyContactEmail String?
+  emergencyContactPhone String?
+  onboarded             Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model UserCheckIn {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  frequency String
+  nextDate  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PushToken {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  token     String   @unique
+  deviceId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Trust {
+  id                     String        @id @default(uuid())
+  user                   User          @relation(fields: [userId], references: [id])
+  userId                 String
+  type                   String
+  name                   String
+  grantorFirstName       String
+  grantorLastName        String
+  trustees               Json
+  successorTrustees      Json?
+  beneficiaries          Json
+  alternateBeneficiaries Json?
+  stateOfRegistration    String
+  assetDescriptions      Json?
+  clauseSelections       Json
+  completedFields        Json
+  finalized              Boolean       @default(false)
+  finalizedAt            DateTime?
+  generatedPdfKey        String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+  auditLogs              AuditLog[]
+}
+
+model Entity {
+  id                  String    @id @default(uuid())
+  user                User      @relation(fields: [userId], references: [id])
+  userId              String
+  type                String
+  name                String
+  owners              Json
+  registeredAgent     Json
+  stateOfRegistration String
+  businessAddress     String
+  EIN                 String?
+  businessPurpose     String
+  capitalContributions Json?
+  clauseSelections    Json
+  completedFields     Json
+  finalized           Boolean   @default(false)
+  finalizedAt         DateTime?
+  generatedDocKey     String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  auditLogs           AuditLog[]
+}
+
+model FinancialAccount {
+  id               String   @id @default(uuid())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           String
+  provider         String
+  accessToken      String
+  accountId        String   @unique
+  name             String
+  mask             String?
+  type             String
+  subtype          String
+  currentBalance   Float
+  availableBalance Float
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model LegacyLetter {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id])
+  userId       String
+  title        String
+  body         String
+  attachments  Json?
+  finalized    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  auditLogs    AuditLog[]
+}
+
+model ProtectionScore {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @unique
+  score          Int
+  maxScore       Int
+  breakdown      Json
+  lastCalculated DateTime @default(now())
+}
+
+model FraudAlert {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String
+  category    String
+  description String
+  createdAt   DateTime @default(now())
+}

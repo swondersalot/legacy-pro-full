@@ -1,78 +1,41 @@
-# legacy-pro-full
+# Legacy Pro Repository
 
-## Overview
-Legacy Pro is a full‑stack platform built with **Next.js**, **React**, **Node.js**, **PostgreSQL**, and **TailwindCSS**. It includes:
+This repository contains the full codebase for Legacy Pro, version 6.7 with improvements based on plans discussed.
 
-- Core application
-- Entity Builder
-- Trust Builder
-- Smart Vault
-- AI Assistant (OpenAI)
-- Notifications
-- Admin panel
-- Billing (Stripe)
-- FAQ & Legal pages
-- Demo / Sandbox mode
-- API documentation
-- Third‑party integrations (Stripe, OpenAI, SMTP)
-- Unit tests
+- `backend/`: Node.js + Express.js + Prisma API server
+- `frontend/`: Next.js + React + Tailwind CSS PWA client
 
-## Project Structure
-```text
-/backend
-  prisma/
-  src/
-    controllers/
-    models/
-    routes/
-    services/
-    middleware/
-    utils/
-  package.json
-/frontend
-  components/
-  hooks/
-  pages/
-  public/
-  styles/
-  next.config.js
-  tailwind.config.js
-/docs
-  openapi.yaml
-/scripts
-/tests
-```
+## Setup
 
-## Getting Started
+### Backend
 
-### Prerequisites
-- Node.js ≥ 18
-- PostgreSQL ≥ 14
-- Stripe account & API keys
-- OpenAI API key
-- SMTP credentials
+1. Copy `.env.production` with appropriate environment variables.
+2. Run `npm install` in `backend/`.
+3. Run `npx prisma migrate dev` to setup the database.
+4. Run `npm run build` and then `npm start` or `npm run dev`.
 
-### Local Setup
-```bash
-git clone https://github.com/swondersalot/legacy-pro-full.git
-cd legacy-pro-full
-cp .env.example .env   # populate all required environment variables
-docker compose up -d postgres
-npm install -w backend -w frontend
-npm run db:migrate --workspace=backend
-npm run dev --workspace=frontend
-```
+### Frontend
 
-### Running Tests
-```bash
-npm run test --workspaces
-```
+1. Copy `.env.production` with appropriate environment variables.
+2. Run `npm install` in `frontend/`.
+3. Run `npm run build` and `npm start` (or use `npm run dev`).
 
-### Deployment
-See `docs/deployment.md` for step‑by‑step instructions on deploying:
-- **Frontend** → Vercel (or any Node‑compatible host)
-- **Backend**  → Fly.io / Render / DigitalOcean App Platform
-- **Database** → Supabase / Neon / Railway
+## Scripts
 
-## License
-MIT
+### Backend
+
+- `npm run dev`: Run with nodemon for development.
+- `npm run build`: Compile TypeScript to JavaScript.
+- `npm run start`: Start the compiled server.
+- `npm run migrate`: Run Prisma migrations.
+
+### Frontend
+
+- `npm run dev`: Start Next.js development server.
+- `npm run build`: Build for production.
+- `npm run start`: Start the Next.js production server.
+
+## Folder Structure
+
+Refer to detailed documentation in `/docs` for full structure and implementation details.
+
