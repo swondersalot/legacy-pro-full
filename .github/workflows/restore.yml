@@ -281,7 +281,7 @@ jobs:
           # ============================
           # (If using Firebase, otherwise skip)
           # cd frontend
-          # npm install firebase
+          # npm install --legacy-peer-deps firebase
           # echo "// Firebase init code here" > src/firebaseConfig.js
           # cd ..
           
