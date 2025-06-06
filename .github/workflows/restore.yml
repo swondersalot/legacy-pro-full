@@ -5187,3 +5187,11 @@ jobs:
           cd ..
           
           echo "Part 9 complete: Email templates and push notification registration added."
+      - name: Commit restored files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B legacypro-full-restore
+          git add .
+          git commit -m "Restore full codebase from text file"
+          git push --force origin legacyp
