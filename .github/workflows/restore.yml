@@ -1,5 +1,8 @@
 name: Restore
 
+permissions:
+  contents: write
+
 on:
   workflow_dispatch:
 
@@ -8,7 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Restore via script
         run: |
@@ -5189,10 +5195,13 @@ jobs:
           echo "Part 9 complete: Email templates and push notification registration added."
 
       - name: Commit restored files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
           git checkout -B legacypro-full-restore
           git add .
-          git commit -m "Restore full codebase from text file"
+          git commit -m "Restore full codebase from text file" || echo "Nothing to commit"
           git push --force origin legacypro-full-restore
