@@ -101,7 +101,7 @@ jobs:
           EOF
           
           # ============================
-          # Part 2: Prisma schema (corrected)
+          # Part 2: Prisma schema
           # ============================
           cat > backend/prisma/schema.prisma << 'EOF'
           datasource db {
@@ -114,23 +114,21 @@ jobs:
           }
           
           model User {
-            id            String         @id @default(uuid())
-            email         String         @unique
-            password      String
-            createdAt     DateTime       @default(now())
-            updatedAt     DateTime       @updatedAt
-            profile       Profile?
+            id         String   @id @default(uuid())
+            email      String   @unique
+            password   String
+            createdAt  DateTime @default(now())
+            updatedAt  DateTime @updatedAt
+            profile    Profile?
             subscriptions Subscription[]
-            trusts        Trust[]
-            vaultItems    VaultItem[]
-            notifications Notification[]
-            reminders     Reminder[]
+            trusts     Trust[]
+            vaultItems VaultItem[]
           }
           
           model Profile {
             id        String  @id @default(uuid())
             user      User    @relation(fields: [userId], references: [id])
-            userId    String  @unique
+            userId    String
             firstName String
             lastName  String
             avatarUrl String?
@@ -148,10 +146,10 @@ jobs:
           }
           
           model Plan {
-            id            String         @id @default(uuid())
-            name          String
-            price         Int
-            interval      String
+            id          String         @id @default(uuid())
+            name        String
+            price       Int
+            interval    String
             subscriptions Subscription[]
           }
           
@@ -214,9 +212,10 @@ jobs:
           # Part 4: Initialize Node.js Backend
           # ============================
           cd backend
-          npm install --legacy-peer-deps
+          npm install
           npx prisma generate
-          npx prisma migrate dev --name init
+                    # Skipping prisma migrate (DATABASE_URL not set in CI)
+                    # npx prisma migrate dev --name init
           cd ..
           
           # ============================
