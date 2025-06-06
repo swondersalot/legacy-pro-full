@@ -20,7 +20,7 @@ jobs:
           set -e
           current=""
           while IFS= read -r line; do
-      if [[ if [[ "$line" =~ ^/.+\..+$ ]]; then
+      if [[ "$line" =~ '^/.+\..+$' ]]; then
               current="$filepath"
               : > "$current"
             else
