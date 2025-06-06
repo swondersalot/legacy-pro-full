@@ -1,0 +1,31 @@
+name: Unpack LegacyPro Zip
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'legacypro-repo.zip'
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install unzip
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - name: Unzip and create new branch
+        run: |
+          unzip -o legacypro-repo.zip -d legacypro-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B legacypro-unpacked
+          cp -R legacypro-repo/* .
+          rm -rf legacypro-repo.zip legacypro-repo
+          git add .
+          git commit -m "Unpack legacypro-repo.zip into repository"
+          git push --force origin legacypro-unpacked
