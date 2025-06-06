@@ -212,7 +212,7 @@ jobs:
           # Part 4: Initialize Node.js Backend
           # ============================
           cd backend
-          npm install
+          npm install --legacy-peer-deps
           npx prisma generate
           npx prisma migrate dev --name init
           cd ..
@@ -281,7 +281,7 @@ jobs:
           # ============================
           # (If using Firebase, otherwise skip)
           # cd frontend
-          # npm install --legacy-peer-deps firebase
+          # npm install firebase
           # echo "// Firebase init code here" > src/firebaseConfig.js
           # cd ..
           
