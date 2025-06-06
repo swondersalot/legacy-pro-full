@@ -20,9 +20,7 @@ jobs:
           set -e
           current=""
           while IFS= read -r line; do
-            if [[ "$line" =~ ^/[A-Za-z0-9._/-]+$ ]]; then
-              filepath="${line#/}"
-              mkdir -p "$(dirname "$filepath")"
+      if [[ "$line" =~ ^/[A-Za-z0-9._/-]+\.[A-Za-z0-9]+$ ]]; then        mkdir -p "$(dirname "$filepath")"
               current="$filepath"
               : > "$current"
             else
