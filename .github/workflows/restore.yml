@@ -14,11 +14,11 @@ jobs:
         run: |
           #!/usr/bin/env bash
           set -e
-          
+
           # ============================
           # Part 1: Backend Directories & package.json
           # ============================
-          
+
           # Create backend directory structure
           mkdir -p backend/prisma
           mkdir -p backend/src/config
@@ -42,8 +42,8 @@ jobs:
           mkdir -p backend/src/jobs
           mkdir -p backend/src/jobs/notifications
           mkdir -p backend/src/jobs/reminders
-          
-          # Initialize package.json
+
+          # Initialize backend/package.json
           cat > backend/package.json << 'EOF'
           {
             "name": "legacy-pro-backend",
@@ -99,41 +99,45 @@ jobs:
             }
           }
           EOF
-          
+
           # ============================
-          # Part 2: Prisma schema
+          # Part 2: Prisma schema (corrected)
           # ============================
+
+          mkdir -p backend/prisma
           cat > backend/prisma/schema.prisma << 'EOF'
           datasource db {
             provider = "postgresql"
             url      = env("DATABASE_URL")
           }
-          
+
           generator client {
             provider = "prisma-client-js"
           }
-          
+
           model User {
-            id         String   @id @default(uuid())
-            email      String   @unique
-            password   String
-            createdAt  DateTime @default(now())
-            updatedAt  DateTime @updatedAt
-            profile    Profile?
+            id            String         @id @default(uuid())
+            email         String         @unique
+            password      String
+            createdAt     DateTime       @default(now())
+            updatedAt     DateTime       @updatedAt
+            profile       Profile?
             subscriptions Subscription[]
-            trusts     Trust[]
-            vaultItems VaultItem[]
+            trusts        Trust[]
+            vaultItems    VaultItem[]
+            notifications Notification[]
+            reminders     Reminder[]
           }
-          
+
           model Profile {
             id        String  @id @default(uuid())
             user      User    @relation(fields: [userId], references: [id])
-            userId    String
+            userId    String  @unique
             firstName String
             lastName  String
             avatarUrl String?
           }
-          
+
           model Subscription {
             id         String   @id @default(uuid())
             user       User     @relation(fields: [userId], references: [id])
@@ -144,15 +148,15 @@ jobs:
             startedAt  DateTime @default(now())
             endedAt    DateTime?
           }
-          
+
           model Plan {
-            id          String         @id @default(uuid())
-            name        String
-            price       Int
-            interval    String
+            id            String         @id @default(uuid())
+            name          String
+            price         Int
+            interval      String
             subscriptions Subscription[]
           }
-          
+
           model Trust {
             id          String   @id @default(uuid())
             user        User     @relation(fields: [userId], references: [id])
@@ -162,7 +166,7 @@ jobs:
             provisions  Json
             isComplete  Boolean  @default(false)
           }
-          
+
           model VaultItem {
             id        String   @id @default(uuid())
             user      User     @relation(fields: [userId], references: [id])
@@ -171,7 +175,7 @@ jobs:
             fileUrl   String
             createdAt DateTime @default(now())
           }
-          
+
           model Notification {
             id        String   @id @default(uuid())
             user      User     @relation(fields: [userId], references: [id])
@@ -180,7 +184,7 @@ jobs:
             read      Boolean  @default(false)
             createdAt DateTime @default(now())
           }
-          
+
           model Reminder {
             id        String   @id @default(uuid())
             user      User     @relation(fields: [userId], references: [id])
@@ -190,37 +194,40 @@ jobs:
             sent      Boolean  @default(false)
           }
           EOF
-          
+
           # ============================
           # Part 3: Environment Templates
           # ============================
+
           mkdir -p backend
           cat > backend/.env.example << 'EOF'
           DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DBNAME
           JWT_SECRET=your_jwt_secret_here
           STRIPE_SECRET_KEY=your_stripe_secret_key_here
           STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret_here
-          
+
           OPENAI_API_KEY=your_openai_key_here
           SMTP_HOST=smtp.sendgrid.net
           SMTP_PORT=587
           SMTP_USER=apikey_or_smtp_user
           SMTP_PASS=apikey_or_smtp_pass
           EOF
-          
+
           # ============================
           # Part 4: Initialize Node.js Backend
           # ============================
+
           cd backend
-          npm install
+          npm install --legacy-peer-deps
           npx prisma generate
-                    # Skipping prisma migrate (DATABASE_URL not set in CI)
-                    # npx prisma migrate dev --name init
+          # Skipping prisma migrate (DATABASE_URL not set in CI)
+          # npx prisma migrate dev --name init
           cd ..
-          
+
           # ============================
           # Part 5: Frontend Directories & package.json
           # ============================
+
           mkdir -p frontend/src/components/layout
           mkdir -p frontend/src/components/vault
           mkdir -p frontend/src/components/trust
@@ -231,7 +238,7 @@ jobs:
           mkdir -p frontend/src/pages/dashboard
           mkdir -p frontend/public/images
           mkdir -p frontend/styles
-          
+
           cat > frontend/package.json << 'EOF'
           {
             "name": "legacy-pro-frontend",
@@ -263,10 +270,11 @@ jobs:
             }
           }
           EOF
-          
+
           # ============================
           # Part 6: Tailwind & Next Setup
           # ============================
+
           cd frontend
           npx tailwindcss init -p
           echo "module.exports = {" > tailwind.config.js
@@ -276,7 +284,7 @@ jobs:
           echo "};" >> tailwind.config.js
           mkdir -p src/pages/api
           cd ..
-          
+
           # ============================
           # Part 7: Firebase Initialization (Optional)
           # ============================
@@ -285,10 +293,11 @@ jobs:
           # npm install firebase
           # echo "// Firebase init code here" > src/firebaseConfig.js
           # cd ..
-          
+
           # ============================
           # Part 8: Create Push & Email Templates
           # ============================
+
           mkdir -p backend/src/templates/email
           mkdir -p backend/src/templates/push
           mkdir -p backend/src/templates/reminder
@@ -300,14 +309,15 @@ jobs:
             </body>
           </html>
           EOF
-          
+
           cat > backend/src/templates/push/notification.txt << 'EOF'
           Hello {{name}}, you have a new notification.
           EOF
-          
+
           # ============================
           # Part 9: Email Templates & Push Notifications
           # ============================
+
           mkdir -p frontend/public/templates/email
           mkdir -p frontend/public/templates/push
           cat > frontend/public/templates/email/reset-password.html << 'EOF'
@@ -318,9 +328,9 @@ jobs:
             </body>
           </html>
           EOF
-          
+
           cat > frontend/public/templates/push/new-notification.txt << 'EOF'
           New alert: {{alertMessage}}
           EOF
-          
+
           echo "Part 9 complete: Email templates and push notification registration added."
