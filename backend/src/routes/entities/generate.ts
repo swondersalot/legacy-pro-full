@@ -42,9 +42,9 @@ router.post("/generate", authMiddleware, async (req, res, next) => {
       }
     });
 
-    const prompt = \`
+    const prompt = `
 You are a corporate attorney AI. Generate Articles of Organization for a \${input.type} named \${input.entityName} in \${input.state}, owned by \${JSON.stringify(input.owners)}, registered agent \${JSON.stringify(input.registeredAgent)}, purpose \${input.purpose || "N/A"}. Include any additional clauses: \${JSON.stringify(input.additionalClauses || [])}. Provide the final document text only.
-\`;
+`;
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");

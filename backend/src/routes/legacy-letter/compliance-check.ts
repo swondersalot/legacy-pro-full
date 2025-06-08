@@ -14,11 +14,11 @@ router.post("/compliance-check", authMiddleware, async (req, res, next) => {
     const letter = await prisma.legacyLetter.findUnique({ where: { id: letterId } });
     if (!letter) throw new ApiError(404, "Letter not found");
 
-    const prompt = \`
+    const prompt = `
 You are ComplianceGPT. Review this legacy letter for legal completeness and tone. Return JSON: { "pass": boolean, "issues": [string] }.
 Letter:
 \${letter.body}
-\`;
+`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4-turbo",

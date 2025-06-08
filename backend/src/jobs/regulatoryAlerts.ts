@@ -23,7 +23,7 @@ export default async function regulatoryAlerts() {
         data: {
           userId,
           type: "RegulatoryUpdate",
-          content: { message: \`\${change.state} law update: \${change.description}\` }
+          content: { message: `${change.state} law update: ${change.description}` }
         }
       });
 
@@ -36,7 +36,7 @@ export default async function regulatoryAlerts() {
         await sendEmail({
           to: user.email,
           subject: "Regulatory Update",
-          html: \`<p>\${change.state} law update: \${change.description}</p>\`
+          html: `<p>${change.state} law update: ${change.description}</p>`
         });
       }
 

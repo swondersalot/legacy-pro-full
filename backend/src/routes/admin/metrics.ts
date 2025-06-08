@@ -8,13 +8,13 @@ const router = express.Router();
 router.get("/metrics/users", authMiddleware, async (req, res, next) => {
   try {
     if (req.user.role !== "ADMIN") return res.status(403).json({ error: "Forbidden" });
-    const growth = await prisma.$queryRaw\`
+    const growth = await prisma.$queryRaw`
       SELECT to_char("createdAt", 'YYYY-MM') AS month, COUNT(*) AS count
       FROM "User"
       GROUP BY month
       ORDER BY month DESC
       LIMIT 12;
-    \`;
+    `;
     const totalUsers = await prisma.user.count();
     res.json({ growth, totalUsers });
   } catch (err) {
@@ -26,12 +26,12 @@ router.get("/metrics/users", authMiddleware, async (req, res, next) => {
 router.get("/metrics/subscriptions", authMiddleware, async (req, res, next) => {
   try {
     if (req.user.role !== "ADMIN") return res.status(403).json({ error: "Forbidden" });
-    const byPlanRaw = await prisma.$queryRaw\`
+    const byPlanRaw = await prisma.$queryRaw`
       SELECT "planId", COUNT(*) AS count
       FROM "UserSubscription"
       WHERE status = 'ACTIVE'
       GROUP BY "planId";
-    \`;
+    `;
     const byPlan = {};
     for (const row of byPlanRaw as any[]) {
       const plan = await prisma.subscriptionPlan.findUnique({ where: { id: row.planId } });
@@ -56,13 +56,13 @@ router.get("/metrics/subscriptions", authMiddleware, async (req, res, next) => {
 router.get("/metrics/vault", authMiddleware, async (req, res, next) => {
   try {
     if (req.user.role !== "ADMIN") return res.status(403).json({ error: "Forbidden" });
-    const monthlyUsage = await prisma.$queryRaw\`
+    const monthlyUsage = await prisma.$queryRaw`
       SELECT to_char("createdAt", 'YYYY-MM') AS month, SUM(size) AS bytes
       FROM "VaultFile"
       GROUP BY month
       ORDER BY month DESC
       LIMIT 12;
-    \`;
+    `;
     res.json({ monthlyUsage });
   } catch (err) {
     next(err);

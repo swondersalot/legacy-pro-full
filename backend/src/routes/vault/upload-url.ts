@@ -10,7 +10,7 @@ const s3 = new AWS.S3();
 router.post("/upload-url", authMiddleware, async (req, res, next) => {
   try {
     const { fileName, fileType, size } = req.body;
-    const key = \`vault/\${req.user.id}/\${uuidv4()}-\${fileName}\`;
+    const key = `vault/${req.user.id}/${uuidv4()}-${fileName}`;
     const url = s3.getSignedUrl("putObject", {
       Bucket: process.env.S3_BUCKET_NAME!,
       Key: key,

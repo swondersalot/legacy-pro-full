@@ -20,7 +20,7 @@ router.post("/:id/finalize", authMiddleware, async (req, res, next) => {
     page.drawText(letter.body, { x: 50, y: 700, size: 12, maxWidth: 500 });
     const pdfBytes = await doc.save();
 
-    const key = \`legacy-letters/\${letter.id}.pdf\`;
+    const key = `legacy-letters/${letter.id}.pdf`;
     await s3.putObject({
       Bucket: process.env.S3_BUCKET_NAME!,
       Key: key,
@@ -36,8 +36,8 @@ router.post("/:id/finalize", authMiddleware, async (req, res, next) => {
     await prisma.vaultFile.create({
       data: {
         userId: req.user.id,
-        folderId: await getLegacyLettersFolderId(req.user.id), # implement helper
-        fileName: \`LegacyLetter_\${letter.id}.pdf\`,
+          folderId: await getLegacyLettersFolderId(req.user.id), // implement helper
+          fileName: `LegacyLetter_${letter.id}.pdf`,
         fileType: "application/pdf",
         size: pdfBytes.length,
         s3Key: key

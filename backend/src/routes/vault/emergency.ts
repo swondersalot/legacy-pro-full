@@ -27,11 +27,11 @@ router.post("/", authMiddleware, async (req, res, next) => {
       }
     });
 
-    const link = \`\${process.env.FRONTEND_URL}/emergency/\${code}\`;
+    const link = `${process.env.FRONTEND_URL}/emergency/${code}`;
     await sendEmail({
       to: granteeEmail,
       subject: "Legacy Pro Emergency Access Granted",
-      html: \`<p>You have been granted emergency access to folder <strong>\${folder.path}</strong>. View here: <a href="\${link}">\${link}</a>. This link expires on \${new Date(expiresAt).toDateString()}.</p>\`
+      html: `<p>You have been granted emergency access to folder <strong>${folder.path}</strong>. View here: <a href="${link}">${link}</a>. This link expires on ${new Date(expiresAt).toDateString()}.</p>`
     });
 
     res.json({ message: "Emergency access granted" });

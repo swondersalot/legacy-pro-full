@@ -17,7 +17,6 @@
     "express": "^4.17.1",
     "express-rate-limit": "^6.0.0",
     "firebase-admin": "^10.0.0",
-    "jsdoc-to-swagger": "^1.0.0",
     "jsonwebtoken": "^8.5.1",
     "nodemailer": "^6.7.2",
     "plaid": "^10.0.0",
