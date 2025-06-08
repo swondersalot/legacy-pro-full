@@ -39,7 +39,7 @@ router.post("/generate", authMiddleware, async (req, res, next) => {
       return clause ? clause.text : "";
     });
 
-    const prompt = \`
+    const prompt = `
 You are LegalGPT. Generate a \${input.type} Trust for \${input.state}.
 Grantor: \${JSON.stringify(input.grantor)}.
 Trustees: \${JSON.stringify(input.trustees)}.
@@ -48,7 +48,7 @@ Beneficiaries: \${JSON.stringify(input.beneficiaries)}.
 Assets: \${JSON.stringify(input.assetsIncluded)}.
 Include clauses: \${clauseTexts.join("\\n\\n")}.
 Respond with final document text only.
-\`;
+`;
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");

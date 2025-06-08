@@ -25,7 +25,7 @@ router.post("/", authMiddleware, async (req, res, next) => {
     const parent = parentId
       ? await prisma.vaultFolder.findUnique({ where: { id: parentId } })
       : null;
-    const path = parent ? \`\${parent.path}/\${name}\` : \`/\${name}\`;
+    const path = parent ? `${parent.path}/${name}` : `/${name}`;
     const newFolder = await prisma.vaultFolder.create({
       data: {
         userId: req.user.id,
@@ -49,11 +49,11 @@ router.patch("/:id", authMiddleware, async (req, res, next) => {
     });
     if (!folder) throw new ApiError(404, "Folder not found");
 
-    let newPath = \`/\${name}\`;
+    let newPath = `/${name}`;
     if (parentId) {
       const parent = await prisma.vaultFolder.findUnique({ where: { id: parentId } });
       if (!parent) throw new ApiError(404, "Parent not found");
-      newPath = \`\${parent.path}/\${name}\`;
+      newPath = `${parent.path}/${name}`;
     }
 
     const updated = await prisma.vaultFolder.update({

@@ -14,13 +14,13 @@ router.post("/:id/finalize", authMiddleware, async (req, res, next) => {
     const trust = await prisma.trust.findUnique({ where: { id: req.params.id } });
     if (!trust) throw new ApiError(404, "Trust not found");
 
-    # Generate PDF using PDFDocument from trust.data.text
+    // Generate PDF using PDFDocument from trust.data.text
     const doc = await PDFDocument.create();
     const page = doc.addPage();
     page.drawText((trust.data as any).text || "", { x: 50, y: 700, size: 12, maxWidth: 500 });
     const pdfBytes = await doc.save();
 
-    const key = \`trusts/\${trust.id}.pdf\`;
+    const key = `trusts/${trust.id}.pdf`;
     await s3
       .putObject({
         Bucket: process.env.S3_BUCKET_NAME!,
@@ -38,8 +38,8 @@ router.post("/:id/finalize", authMiddleware, async (req, res, next) => {
     await prisma.vaultFile.create({
       data: {
         userId: req.user.id,
-        folderId: await getTrustsFolderId(req.user.id), # implement helper
-        fileName: \`\${trust.trustName}.pdf\`,
+          folderId: await getTrustsFolderId(req.user.id), // implement helper
+        fileName: `${trust.trustName}.pdf`,
         fileType: "application/pdf",
         size: pdfBytes.length,
         s3Key: key

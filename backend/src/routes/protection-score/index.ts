@@ -46,7 +46,7 @@ router.get("/", authMiddleware, async (req, res, next) => {
     requiredDocs.forEach((doc) => {
       const hasDoc = userFiles.some((f) => f.fileName.includes(doc));
       if (hasDoc) breakdown.vault += 5;
-      else suggestions.push(\`Upload your \${doc}.\`);
+      else suggestions.push(`Upload your ${doc}.`);
     });
 
     // Security Settings

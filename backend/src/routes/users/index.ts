@@ -38,7 +38,7 @@ router.post("/me/avatar", authMiddleware, async (req, res, next) => {
   try {
     const { fileName, fileType, size } = req.body;
     // Generate presigned PUT URL for S3 (implement getPresignedPutUrl separately)
-    const key = \`avatars/\${req.user.id}/\${fileName}\`;
+    const key = `avatars/${req.user.id}/${fileName}`;
     const putUrl = await getPresignedPutUrl(key, fileType);
     res.json({ key, url: putUrl });
   } catch (err) {

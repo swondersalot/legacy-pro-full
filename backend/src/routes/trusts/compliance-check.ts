@@ -13,11 +13,11 @@ router.post("/compliance-check", authMiddleware, async (req, res, next) => {
     const trust = await prisma.trust.findUnique({ where: { id: trustId } });
     if (!trust) throw new ApiError(404, "Trust not found");
 
-    const prompt = \`
+    const prompt = `
 You are ComplianceGPT, an attorney AI. Review the following \${trust.type} Trust for \${trust.state} compliance. Identify missing required sections or issues. Return JSON: { "pass": boolean, "issues": string[] }.
 Document:
 \${(trust.data as any).text || ""}
-    \`;
+    `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4-turbo",

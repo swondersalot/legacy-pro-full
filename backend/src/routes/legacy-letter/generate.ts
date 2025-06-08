@@ -31,9 +31,9 @@ router.post("/generate", authMiddleware, async (req, res, next) => {
       })
     );
 
-    const prompt = \`
+    const prompt = `
 You are an estate planning advisor AI. Draft a \${tone} legacy letter addressed to \${recipients.join(", ")}. Summaries: \${JSON.stringify(docsData)}. Provide final letter text.
-\`;
+`;
 
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");

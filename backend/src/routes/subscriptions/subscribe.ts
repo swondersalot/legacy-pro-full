@@ -31,8 +31,8 @@ router.post("/subscribe", authMiddleware, async (req, res, next) => {
       payment_method_types: ["card"],
       customer_email: user!.email!,
       line_items: [{ price: plan.stripePlanId, quantity: 1 }],
-      success_url: \`\${process.env.FRONTEND_URL}/settings/plan?session_id={CHECKOUT_SESSION_ID}\`,
-      cancel_url: \`\${process.env.FRONTEND_URL}/settings/plan\`
+      success_url: `${process.env.FRONTEND_URL}/settings/plan?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/settings/plan`
     });
 
     res.json({ sessionId: session.id, url: session.url });

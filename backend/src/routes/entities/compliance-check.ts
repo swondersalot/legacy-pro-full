@@ -13,11 +13,11 @@ router.post("/compliance-check", authMiddleware, async (req, res, next) => {
     const entity = await prisma.entity.findUnique({ where: { id: entityId } });
     if (!entity) throw new ApiError(404, "Entity not found");
 
-    const prompt = \`
+    const prompt = `
 You are ComplianceGPT, a corporate law expert. Review the following \${entity.type} formation document for \${entity.state} compliance. Return JSON: { "pass": boolean, "issues": string[] }.
 Document:
 \${(entity.data as any).text || ""}
-\`;
+    `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4-turbo",
